@@ -9,21 +9,18 @@ Label images → Train model → Auto-predict → Review → Repeat. A complete 
 ## Quick Start
 
 ```bash
-# 1. Install
-cd yololabel-ai
+# 1. Clone
+git clone https://github.com/hdtinh57/YOLOLabel_AI.git
+cd YOLOLabel_AI
+
+# 2. Install
 pip install -r backend/requirements.txt
 
-# 2. Run
-python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
-
-# 3. Run Application
+# 3. Run
 python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
 
 # 4. Open browser → http://localhost:8000
-
 ```
-
-> **Python ≥ 3.10** required. GPU recommended for training (CUDA).
 
 > **Python ≥ 3.10** required. GPU recommended for training (CUDA).
 
@@ -105,7 +102,7 @@ python -m pytest tests/ -v
 ## Architecture
 
 ```
-yololabel-ai/
+YOLOLabel_AI/
 ├── backend/                     # FastAPI server (Python)
 │   ├── main.py                  # App entry + startup lifecycle
 │   ├── config.py                # SQLite-backed settings
