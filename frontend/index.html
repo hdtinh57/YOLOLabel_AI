@@ -1,0 +1,916 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>YOLOLabel AI — Smart Bounding Box Labeler</title>
+    <meta
+      name="description"
+      content="AI-powered bounding box labeling tool with active learning for YOLO training"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/dashboard.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="logo">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <rect
+              x="2"
+              y="2"
+              width="24"
+              height="24"
+              rx="6"
+              stroke="url(#logo-grad)"
+              stroke-width="2.5"
+            />
+            <rect
+              x="7"
+              y="7"
+              width="9"
+              height="9"
+              rx="2"
+              fill="url(#logo-grad)"
+              opacity="0.9"
+            />
+            <rect
+              x="12"
+              y="12"
+              width="9"
+              height="9"
+              rx="2"
+              stroke="url(#logo-grad)"
+              stroke-width="1.5"
+              stroke-dasharray="3 2"
+            />
+            <defs>
+              <linearGradient id="logo-grad" x1="0" y1="0" x2="28" y2="28">
+                <stop stop-color="#3B82F6" />
+                <stop offset="1" stop-color="#06B6D4" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <h1>YOLOLabel <span class="accent">AI</span></h1>
+        </div>
+
+        </div>
+        <div class="project-controls" style="margin-left: 20px; display: flex; align-items: center; gap: 8px;">
+          <select id="project-select" class="form-select" style="width: 150px; height: 32px; padding: 0 8px; font-size: 13px;">
+          </select>
+          <button class="btn btn-sm btn-ghost" id="btn-new-project" title="New Project">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+          </button>
+          <button class="btn btn-sm btn-ghost" id="btn-delete-project" title="Delete Project">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+          </button>
+   <button class="btn btn-sm btn-ghost" id="btn-close-project" title="Close Project (Return to Landing)">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 6L6 18M6 6l12 12"/>
+    </svg>
+  </button>
+        </div>
+      </div>
+      <div class="header-center">
+          <button class="split-btn active" data-split="train">Train</button>
+          <button class="split-btn" data-split="val">Val</button>
+          <div class="separator" style="height:20px; width:1px; background:var(--border-default); margin: 0 8px;"></div>
+          <button class="split-btn" id="btn-mlops-tab" title="MLOps Dashboard">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+              <path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>
+            </svg>
+            MLOps
+          </button>
+        </div>
+      </div>
+      <div class="header-right">
+        <button
+          class="btn btn-sm btn-ghost"
+          id="btn-upload"
+          title="Upload Images"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="3" x2="12" y2="15" />
+          </svg>
+          Upload
+        </button>
+        <button
+          class="btn btn-sm btn-ghost"
+          id="btn-export"
+          title="Export YOLO Dataset"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          Export
+        </button>
+        <button
+          class="btn btn-sm btn-accent"
+          id="btn-settings"
+          title="Settings"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
+            />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Layout -->
+    <main class="app-main">
+      <!-- Left Panel: Gallery -->
+      <aside class="panel panel-left" id="gallery-panel">
+        <div class="panel-header">
+          <h2>Gallery</h2>
+          <div class="gallery-stats" id="gallery-stats">
+            <span class="stat-badge labeled">0</span>
+            <span class="stat-badge predicted">0</span>
+            <span class="stat-badge unlabeled">0</span>
+          </div>
+        </div>
+        <div class="gallery-controls">
+          <input
+            type="text"
+            class="search-input"
+            id="gallery-search"
+            placeholder="Search images..."
+          />
+          <select class="filter-select" id="gallery-filter">
+            <option value="all">All</option>
+            <option value="smart">Smart Queue</option>
+            <option value="unlabeled">Unlabeled</option>
+            <option value="predicted">Predicted</option>
+            <option value="labeled">Labeled</option>
+          </select>
+        </div>
+        <div class="gallery-list" id="gallery-list">
+          <div class="gallery-empty">
+            <svg
+              width="48"
+              height="48"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              opacity="0.3"
+            >
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <polyline points="21 15 16 10 5 21" />
+            </svg>
+            <p>No images loaded</p>
+            <p class="hint">
+              Upload images or place them in<br /><code
+                >data/images/train/</code
+              >
+            </p>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Center: Canvas -->
+      <section class="canvas-area" id="canvas-area">
+        <div class="canvas-toolbar">
+          <div class="tool-group">
+            <button
+              class="tool-btn active"
+              data-tool="draw"
+              title="Draw Box (B)"
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+              </svg>
+            </button>
+            <button class="tool-btn" data-tool="select" title="Select (V)">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z" />
+              </svg>
+            </button>
+            <button class="tool-btn" data-tool="pan" title="Pan (H)">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M18 11V6a2 2 0 0 0-4 0v3M14 10V4a2 2 0 0 0-4 0v7m0 0v-3a2 2 0 0 0-4 0v4m0 0a2 2 0 0 0-4 0v3a8 8 0 0 0 16 0v-2a2 2 0 0 0-4 0"
+                />
+              </svg>
+            </button>
+          </div>
+          <div class="separator"></div>
+          <div class="tool-group">
+            <button class="tool-btn" id="btn-zoom-in" title="Zoom In (+)">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                <line x1="11" y1="8" x2="11" y2="14" />
+                <line x1="8" y1="11" x2="14" y2="11" />
+              </svg>
+            </button>
+            <button class="tool-btn" id="btn-zoom-out" title="Zoom Out (-)">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                <line x1="8" y1="11" x2="14" y2="11" />
+              </svg>
+            </button>
+            <button class="tool-btn" id="btn-zoom-fit" title="Fit to View (0)">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"
+                />
+              </svg>
+            </button>
+            <span class="zoom-level" id="zoom-level">100%</span>
+          </div>
+          <div class="separator"></div>
+          <div class="tool-group">
+            <button
+              class="tool-btn danger"
+              id="btn-delete-box"
+              title="Delete Selected (Del)"
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polyline points="3 6 5 6 21 6" />
+                <path
+                  d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                />
+              </svg>
+            </button>
+            <button class="tool-btn" id="btn-undo" title="Undo (Ctrl+Z)">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polyline points="1 4 1 10 7 10" />
+                <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+              </svg>
+            </button>
+          </div>
+          <div class="toolbar-spacer"></div>
+          <div class="tool-group nav-group">
+            <button class="tool-btn" id="btn-prev" title="Previous (←)">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polyline points="15 18 9 12 15 6" />
+              </svg>
+            </button>
+            <span class="nav-info" id="nav-info">0 / 0</span>
+            <button class="tool-btn" id="btn-next" title="Next (→)">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="canvas-container" id="canvas-container">
+          <canvas id="annotation-canvas"></canvas>
+          <div class="canvas-placeholder" id="canvas-placeholder">
+            <svg
+              width="64"
+              height="64"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1"
+              opacity="0.2"
+            >
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <polyline points="21 15 16 10 5 21" />
+            </svg>
+            <p>Select an image to start labeling</p>
+            <p class="hint">or press <kbd>←</kbd> <kbd>→</kbd> to navigate</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Panel: Classes + Annotations -->
+      <aside class="panel panel-right" id="right-panel">
+        <!-- Classes Section -->
+        <div class="panel-section">
+          <div class="panel-header">
+            <h2>Classes</h2>
+            <button
+              class="btn btn-xs btn-ghost"
+              id="btn-add-class"
+              title="Add Class"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            </button>
+          </div>
+          <div class="class-list" id="class-list">
+            <div class="class-empty">No classes defined</div>
+          </div>
+        </div>
+
+        <!-- Annotations Section -->
+        <div class="panel-section">
+          <div class="panel-header">
+            <h2>Annotations</h2>
+            <span class="badge" id="annotation-count">0</span>
+          </div>
+          <div class="annotation-list" id="annotation-list">
+            <div class="annotation-empty">No annotations</div>
+          </div>
+          <div
+            class="annotation-actions"
+            id="annotation-actions"
+            style="display: none"
+          >
+            <button
+              class="btn btn-sm btn-success"
+              id="btn-accept-all"
+              title="Accept All Predictions (Space)"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              Accept All
+            </button>
+            <button
+              class="btn btn-sm btn-danger"
+              id="btn-reject-all"
+              title="Reject All Predictions"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+              Reject All
+            </button>
+          </div>
+        </div>
+
+        <!-- Active Learning Section -->
+        <div class="panel-section al-section">
+          <div class="panel-header">
+            <h2>AI Assistant</h2>
+            <div class="al-indicator" id="al-indicator" title="Model Status">
+              <span class="dot"></span>
+            </div>
+          </div>
+          <div class="al-controls">
+            <select id="al-model-select" class="form-select" style="max-width: 140px; font-size: 0.8rem; padding: 4px 8px; height: 32px;" title="Select model for auto-labeling">
+               <option value="" disabled selected>Select Model</option>
+            </select>
+            <button
+              class="btn btn-sm btn-accent"
+              id="btn-auto-predict"
+              title="Auto-predict unlabeled images"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+              </svg>
+              Auto Predict
+            </button>
+            <button
+              class="btn btn-sm btn-primary"
+              id="btn-train"
+              title="Start Training"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                <path d="M2 17l10 5 10-5" />
+                <path d="M2 12l10 5 10-5" />
+              </svg>
+              Train Model
+            </button>
+          </div>
+          <div class="al-stats" id="al-stats">
+            <div class="stat-row">
+              <span class="stat-label">Model</span>
+              <span class="stat-value" id="stat-model">Not loaded</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Labeled</span>
+              <span class="stat-value" id="stat-labeled">0</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Train Threshold</span>
+              <span class="stat-value" id="stat-threshold">10</span>
+            </div>
+            <div class="progress-bar" id="label-progress">
+              <div class="progress-fill" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <!-- MLOps Dashboard View -->
+    <div class="dashboard-view" id="dashboard-view">
+      <!-- Tabs -->
+      <div class="dash-tabs">
+        <button class="dash-tab active" id="dash-tab-overview">Overview</button>
+        <button class="dash-tab" id="dash-tab-registry">Model Registry</button>
+      </div>
+
+      <!-- Overview Section -->
+      <div id="dash-overview-section">
+        <!-- KPI Cards -->
+        <div class="kpi-grid" id="kpi-cards"></div>
+
+        <!-- Runs Table -->
+        <div class="dash-section" style="margin-top: var(--sp-4);">
+          <div class="dash-section-header">
+            <h3>Training Runs</h3>
+            <div class="runs-toolbar">
+              <button class="btn btn-sm btn-accent" id="btn-compare-runs" disabled>Compare (0)</button>
+            </div>
+          </div>
+          <div class="dash-section-body" style="padding: 0; overflow-x: auto;">
+            <table class="runs-table">
+              <thead>
+                <tr>
+                  <th style="width: 30px;"></th>
+                  <th>Run ID</th>
+                  <th>Status</th>
+                  <th>Model</th>
+                  <th>Epochs</th>
+                  <th>mAP@50</th>
+                  <th>mAP@50:95</th>
+                  <th>Date</th>
+                  <th>Duration</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="runs-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Registry Section -->
+      <div id="dash-registry-section" style="display: none;">
+        <div class="dash-section">
+          <div class="dash-section-header">
+            <h3>Model Versions</h3>
+          </div>
+          <div class="dash-section-body">
+            <div class="registry-list" id="registry-list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Run Detail Modal -->
+    <div class="modal-overlay" id="run-detail-modal" style="display: none;">
+      <div class="modal run-detail-modal">
+        <div class="modal-header">
+          <div class="run-detail-header">
+            <span class="run-detail-id" id="detail-run-id"></span>
+            <span id="detail-status"></span>
+          </div>
+          <div style="font-size: 13px; color: var(--text-tertiary); margin-top: 4px;">
+            Base Model: <code id="detail-base-model" style="color: var(--accent-cyan);"></code>
+          </div>
+          <button class="btn btn-xs btn-ghost modal-close" id="run-detail-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="run-detail-grid" id="detail-stats-grid"></div>
+          <div class="charts-grid">
+            <div class="chart-card">
+              <h4>Loss Curves</h4>
+              <div class="chart-container"><canvas id="chart-loss"></canvas></div>
+            </div>
+            <div class="chart-card">
+              <h4>Metrics</h4>
+              <div class="chart-container"><canvas id="chart-map"></canvas></div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-accent" id="detail-promote-btn">Promote to Production</button>
+          <button class="btn btn-ghost" onclick="Dashboard.closeRunDetail()">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Compare Modal -->
+    <div class="modal-overlay" id="compare-modal" style="display: none;">
+      <div class="modal run-detail-modal">
+        <div class="modal-header">
+          <h2>Compare Runs</h2>
+          <button class="btn btn-xs btn-ghost modal-close" id="compare-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <table class="compare-table">
+            <thead id="compare-thead"></thead>
+            <tbody id="compare-tbody"></tbody>
+          </table>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" onclick="Dashboard.closeCompare()">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status Bar -->
+    <footer class="status-bar">
+      <div class="status-left">
+        <span class="status-item" id="status-tool">Tool: Draw</span>
+        <span class="status-item" id="status-pos">x: 0, y: 0</span>
+      </div>
+      <div class="status-center">
+        <span class="status-item" id="status-image">No image selected</span>
+      </div>
+      <div class="status-right">
+        <span class="status-item" id="status-shortcuts">
+          <kbd>B</kbd> Draw &nbsp; <kbd>V</kbd> Select &nbsp;
+          <kbd>D</kbd> Delete &nbsp; <kbd>S</kbd> Save &nbsp; <kbd>←→</kbd> Nav
+        </span>
+      </div>
+    </footer>
+
+    <!-- Hidden file input -->
+    <input
+      type="file"
+      id="file-input"
+      multiple
+      accept="image/*"
+      style="display: none"
+    />
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settings-modal" style="display: none">
+      <div class="modal">
+        <div class="modal-header">
+          <h2>Settings</h2>
+          <button class="btn btn-xs btn-ghost modal-close" id="settings-close">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Base Model</label>
+            <select id="setting-model" class="form-select"></select>
+          </div>
+          <div class="form-group">
+            <label>Auto-Train Threshold</label>
+            <input
+              type="number"
+              id="setting-threshold"
+              class="form-input"
+              value="10"
+              min="1"
+              max="100"
+            />
+            <span class="form-hint"
+              >Number of labeled images before auto-training triggers</span
+            >
+          </div>
+          <div class="form-group">
+            <label>Prediction Confidence</label>
+            <input
+              type="range"
+              id="setting-confidence"
+              class="form-range"
+              min="0.05"
+              max="0.95"
+              step="0.05"
+              value="0.25"
+            />
+            <span class="form-value" id="setting-confidence-val">0.25</span>
+          </div>
+          <div class="form-group">
+            <label>Training Epochs</label>
+            <input
+              type="number"
+              id="setting-epochs"
+              class="form-input"
+              value="50"
+              min="1"
+              max="1000"
+            />
+          </div>
+          <div class="form-group">
+            <label>Image Size</label>
+            <select id="setting-imgsz" class="form-select">
+              <option value="320">320</option>
+              <option value="416">416</option>
+              <option value="512">512</option>
+              <option value="640" selected>640</option>
+              <option value="800">800</option>
+              <option value="1024">1024</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Batch Size</label>
+            <input
+              type="number"
+              id="setting-batch"
+              class="form-input"
+              value="16"
+              min="1"
+              max="128"
+            />
+          </div>
+          
+          <details class="advanced-settings" style="margin-top: 20px; border-top: 1px solid #334155; padding-top: 15px;">
+            <summary style="cursor: pointer; font-weight: 500; color: #94a3b8; margin-bottom: 15px;">Advanced Training Parameters</summary>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label>Optimizer</label>
+                    <select id="setting-optimizer" class="form-select">
+                        <option value="auto">Auto</option>
+                        <option value="SGD">SGD</option>
+                        <option value="Adam">Adam</option>
+                        <option value="AdamW">AdamW</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Device (GPU)</label>
+                    <input type="text" id="setting-device" class="form-input" value="0" placeholder="0, 1, or cpu" />
+                </div>
+                <div class="form-group">
+                    <label>Initial LR</label>
+                    <input type="number" id="setting-lr0" class="form-input" step="0.001" value="0.01" />
+                </div>
+                <div class="form-group">
+                    <label>Momentum</label>
+                    <input type="number" id="setting-momentum" class="form-input" step="0.001" value="0.937" />
+                </div>
+                <div class="form-group">
+                    <label>Mosaic Prob.</label>
+                    <input type="number" id="setting-mosaic" class="form-input" step="0.1" min="0" max="1" value="1.0" />
+                </div>
+                 <div class="form-group">
+                    <label>Mixup Prob.</label>
+                    <input type="number" id="setting-mixup" class="form-input" step="0.1" min="0" max="1" value="0.0" />
+                </div>
+            </div>
+          </details>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" id="settings-cancel">Cancel</button>
+          <button class="btn btn-accent" id="settings-save">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Training Progress Modal -->
+    <div class="modal-overlay" id="training-modal" style="display: none">
+      <div class="modal modal-sm">
+        <div class="modal-header">
+          <h2>Training in Progress</h2>
+        </div>
+        <div class="modal-body">
+          <div class="training-progress">
+            <div class="training-spinner"></div>
+            <p id="training-status-text">Initializing...</p>
+            <div class="progress-bar large">
+              <div
+                class="progress-fill"
+                id="training-progress-fill"
+                style="width: 0%"
+              ></div>
+            </div>
+            <span class="progress-label" id="training-progress-label"
+              >0 / 0 epochs</span
+            >
+            <div class="training-metrics" id="training-metrics" style="margin-top: 15px; font-size: 0.85rem; color: #94a3b8; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                <!-- Metrics will be injected here -->
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="btn btn-danger btn-sm"
+            id="training-stop"
+          >
+            Stop Training
+          </button>
+          <button
+            class="btn btn-ghost"
+            id="training-dismiss"
+            style="display: none"
+          >
+            Dismiss
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- New Project Modal -->
+    <div class="modal-overlay" id="new-project-modal" style="display: none">
+      <div class="modal">
+        <div class="modal-header">
+          <h2>New Project</h2>
+          <button class="btn btn-xs btn-ghost modal-close" id="new-project-close">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Project Name</label>
+            <input
+              type="text"
+              id="new-project-name"
+              class="form-input"
+              placeholder="my-awesome-project"
+            />
+            <span class="form-hint"
+              >Only letters, numbers, hyphens, and underscores.</span
+            >
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" id="new-project-cancel">Cancel</button>
+          <button class="btn btn-accent" id="new-project-create">Create</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="js/api.js"></script>
+    <script src="js/canvas.js"></script>
+    <script src="js/classManager.js"></script>
+    <script src="js/gallery.js"></script>
+    <script src="js/shortcuts.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/app.js"></script>
+    <!-- Project Landing Overlay -->
+    <div id="project-landing" class="modal-overlay" style="display: none; background: #0f172a; z-index: 9999;">
+        <div class="landing-container" style="text-align: center; max-width: 500px; width: 100%;">
+            <div class="logo-large" style="margin-bottom: 40px;">
+                <svg width="64" height="64" viewBox="0 0 28 28" fill="none" style="margin-bottom: 16px;">
+                    <rect x="2" y="2" width="24" height="24" rx="6" fill="url(#logo-gradient-landing)" stroke="#38bdf8" stroke-width="2"/>
+                    <path d="M9 9h10v10H9z" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>
+                    <circle cx="19" cy="9" r="3" fill="#38bdf8"/>
+                    <defs>
+                        <linearGradient id="logo-gradient-landing" x1="2" y1="2" x2="26" y2="26" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#0f172a" />
+                            <stop offset="1" stop-color="#06B6D4" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <h1 style="font-size: 2.5rem; font-weight: 800; letter-spacing: -1px;">YOLOLabel <span class="accent">AI</span></h1>
+                <p style="color: #94a3b8; font-size: 1.1rem; margin-top: 8px;">Select a project to begin labeling</p>
+            </div>
+
+            <div class="landing-card" style="background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 32px;">
+                <!-- Project List -->
+                <div id="landing-project-list" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; max-height: 200px; overflow-y: auto;">
+                    <!-- Injected by JS -->
+                </div>
+
+                <div class="divider" style="height: 1px; background: #334155; margin: 24px 0;"></div>
+
+                <!-- Create New -->
+                 <h3 style="color: #e2e8f0; font-size: 1rem; margin-bottom: 16px; font-weight: 500;">Or create a new project</h3>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="landing-new-project-name" class="form-input" placeholder="Project Name" style="height: 44px;">
+                    <button id="landing-create-project" class="btn btn-accent" style="height: 44px; white-space: nowrap;">Create Project</button>
+                </div>
+            </div>
+        </div>
+    </div>
+  </body>
+</html>

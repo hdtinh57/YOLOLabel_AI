@@ -1,0 +1,52 @@
+# ──── Python ────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# ──── Virtual Environments ────
+venv/
+.venv/
+env/
+.env
+
+# ──── IDE ────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ──── OS Files ────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ──── Testing ────
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# ──── Project Data (user-specific, NOT source code) ────
+data/
+runs/
+weights/*.pt
+
+# ──── Database ────
+*.db
+*.db-wal
+*.db-shm
+
+# ──── YOLO / Ultralytics cache ────
+*.onnx
+*.engine
+*.torchscript
+
+# ──── Logs ────
+*.log
