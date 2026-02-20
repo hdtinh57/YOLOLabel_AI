@@ -64,6 +64,13 @@ python -m pytest tests/ -v
 - **Run comparison** — side-by-side metric comparison (up to 5 runs)
 - **Per-project config** — training, augmentation, AL settings stored per project
 
+### Playground (v2.0)
+
+- **Model Sandbox** — Drag and drop images/videos to live test any registry model
+- **Dynamic Selection** — Identifies `[PRODUCTION]` models for immediate A/B testing
+- **Inference Metrics** — Displays latency, active detections, and allows threshold tuning
+- **Audit Logging** — All Playground sessions logged to `inference_sessions` SQLite table
+
 ---
 
 ## Workflow
