@@ -16,6 +16,7 @@
     />
     <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="css/dashboard.css" />
+    <link rel="stylesheet" href="css/playground.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
   </head>
   <body>
@@ -94,6 +95,12 @@
               <path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/>
             </svg>
             MLOps
+          </button>
+          <button class="split-btn" id="btn-playground-tab" title="Playground">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+            Playground
           </button>
         </div>
       </div>
@@ -390,8 +397,76 @@
         </div>
       </section>
 
-      <!-- Right Panel: Classes + Annotations -->
+      <!-- Right Panel: Classes + Annotations + Active Learning -->
       <aside class="panel panel-right" id="right-panel">
+        
+        <!-- Active Learning Section (Smart Labeling) -->
+        <div class="panel-section al-section">
+          <div class="panel-header">
+            <h2>Smart Labeling</h2>
+            <div class="al-indicator" id="al-indicator" title="Model Status">
+              <span class="dot"></span>
+            </div>
+          </div>
+          
+          <div class="al-stats" id="al-stats">
+            <div class="stat-row">
+              <span class="stat-label">Production Model</span>
+              <span class="stat-value" id="stat-model">Loading...</span>
+            </div>
+            
+            <div class="al-progress-container">
+              <div class="stat-row">
+                <span class="stat-label">Training Threshold</span>
+                <span class="stat-value" id="stat-progress-text">0 / 10L</span>
+              </div>
+              <div class="progress-bar" id="label-progress">
+                <div class="progress-fill" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="al-controls">
+            <button
+              class="btn btn-sm btn-accent"
+              id="btn-auto-predict"
+              title="Auto-predict unlabeled images"
+              disabled
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+              </svg>
+              Auto Predict
+            </button>
+            <button
+              class="btn btn-sm btn-primary"
+              id="btn-train"
+              title="Start Training"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                <path d="M2 17l10 5 10-5" />
+                <path d="M2 12l10 5 10-5" />
+              </svg>
+              Train
+            </button>
+          </div>
+        </div>
+
         <!-- Classes Section -->
         <div class="panel-section">
           <div class="panel-header">
@@ -470,74 +545,6 @@
             </button>
           </div>
         </div>
-
-        <!-- Active Learning Section -->
-        <div class="panel-section al-section">
-          <div class="panel-header">
-            <h2>AI Assistant</h2>
-            <div class="al-indicator" id="al-indicator" title="Model Status">
-              <span class="dot"></span>
-            </div>
-          </div>
-          <div class="al-controls">
-            <select id="al-model-select" class="form-select" style="max-width: 140px; font-size: 0.8rem; padding: 4px 8px; height: 32px;" title="Select model for auto-labeling">
-               <option value="" disabled selected>Select Model</option>
-            </select>
-            <button
-              class="btn btn-sm btn-accent"
-              id="btn-auto-predict"
-              title="Auto-predict unlabeled images"
-            >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-              </svg>
-              Auto Predict
-            </button>
-            <button
-              class="btn btn-sm btn-primary"
-              id="btn-train"
-              title="Start Training"
-            >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-              >
-                <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                <path d="M2 17l10 5 10-5" />
-                <path d="M2 12l10 5 10-5" />
-              </svg>
-              Train Model
-            </button>
-          </div>
-          <div class="al-stats" id="al-stats">
-            <div class="stat-row">
-              <span class="stat-label">Model</span>
-              <span class="stat-value" id="stat-model">Not loaded</span>
-            </div>
-            <div class="stat-row">
-              <span class="stat-label">Labeled</span>
-              <span class="stat-value" id="stat-labeled">0</span>
-            </div>
-            <div class="stat-row">
-              <span class="stat-label">Train Threshold</span>
-              <span class="stat-value" id="stat-threshold">10</span>
-            </div>
-            <div class="progress-bar" id="label-progress">
-              <div class="progress-fill" style="width: 0%"></div>
-            </div>
-          </div>
-        </div>
       </aside>
     </main>
 
@@ -592,6 +599,119 @@
           </div>
           <div class="dash-section-body">
             <div class="registry-list" id="registry-list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Playground View -->
+    <div class="playground-view" id="playground-view" style="display: none;">
+      <!-- Left Column: Control Panel -->
+      <div class="pg-sidebar">
+        <h3 class="pg-sidebar-title">Inference Settings</h3>
+        
+        <div class="form-group">
+          <label>Model Version</label>
+          <select id="pg-model-select" class="form-select pg-select">
+            <option value="" disabled selected>Loading models...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Confidence Threshold</label>
+          <div class="range-container">
+            <input type="range" id="pg-confidence" class="form-range" min="0.01" max="1.00" step="0.01" value="0.25">
+            <span class="range-value" id="pg-confidence-val">0.25</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>NMS IoU</label>
+          <div class="range-container">
+            <input type="range" id="pg-iou" class="form-range" min="0.01" max="1.00" step="0.01" value="0.45">
+            <span class="range-value" id="pg-iou-val">0.45</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Image Size (imgsz)</label>
+          <select id="pg-imgsz" class="form-select pg-select">
+            <option value="320">320</option>
+            <option value="416">416</option>
+            <option value="512">512</option>
+            <option value="640" selected>640</option>
+            <option value="800">800</option>
+            <option value="1024">1024</option>
+            <option value="1280">1280</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Max Detections</label>
+          <input type="number" id="pg-max-det" class="form-input" min="1" max="1000" value="300">
+        </div>
+
+        <div class="form-group pg-toggle-group">
+          <label class="pg-toggle-label">
+            <span class="pg-toggle-text">
+              Agnostic NMS
+              <small>Suppress overlapping classes</small>
+            </span>
+            <div class="pg-switch">
+              <input type="checkbox" id="pg-agnostic-nms">
+              <span class="pg-slider"></span>
+            </div>
+          </label>
+        </div>
+
+        <div class="pg-sidebar-actions">
+          <button class="btn btn-outline" id="pg-btn-reset">Reset</button>
+          <button class="btn btn-primary" id="pg-btn-clear" disabled>Clear Media</button>
+          <button class="btn btn-accent" id="pg-btn-predict" disabled>Predict</button>
+        </div>
+      </div>
+
+      <!-- Right Column: Workspace -->
+      <div class="pg-workspace">
+        <div class="pg-status-bar">
+          <div class="pg-metric">
+            <span class="pg-metric-label">Status</span>
+            <span class="pg-metric-value" id="pg-status-text">Ready</span>
+          </div>
+          <div class="pg-metric">
+            <span class="pg-metric-label">Detections</span>
+            <span class="pg-metric-value" id="pg-det-count">-</span>
+          </div>
+          <div class="pg-metric">
+            <span class="pg-metric-label">Inference Time</span>
+            <span class="pg-metric-value" id="pg-inf-time">-</span>
+          </div>
+        </div>
+
+        <div class="pg-media-area" id="pg-media-area">
+          <!-- Upload State -->
+          <div class="pg-upload-state" id="pg-upload-state">
+            <div class="pg-upload-icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <circle cx="8.5" cy="8.5" r="1.5" />
+                <polyline points="21 15 16 10 5 21" />
+              </svg>
+            </div>
+            <h4>Drop media here to start</h4>
+            <p>Supports Images (JPG, PNG) & Videos (MP4, AVI)</p>
+            <input type="file" id="pg-file-input" accept="image/*, video/*" style="display: none;">
+          </div>
+
+          <!-- Result State -->
+          <div class="pg-result-state" id="pg-result-state" style="display: none;">
+            <div class="pg-loading-overlay" id="pg-loading-overlay" style="display: none;">
+              <div class="spinner"></div>
+              <p>Processing with YOLO...</p>
+            </div>
+            <div class="pg-media-container" id="pg-media-container">
+              <!-- Image or Video will be injected here -->
+            </div>
           </div>
         </div>
       </div>
@@ -875,6 +995,7 @@
     <script src="js/gallery.js"></script>
     <script src="js/shortcuts.js"></script>
     <script src="js/dashboard.js"></script>
+    <script src="js/playground.js"></script>
     <script src="js/app.js"></script>
     <!-- Project Landing Overlay -->
     <div id="project-landing" class="modal-overlay" style="display: none; background: #0f172a; z-index: 9999;">

@@ -673,9 +673,18 @@ body {
   gap: var(--sp-2);
 }
 
-/* --- Active Learning Section --- */
+/* --- Smart Labeling Section (Active Learning) --- */
 .al-section {
-  flex: 1;
+  flex-shrink: 0;
+  background: rgba(15, 23, 42, 0.4);
+  border-bottom: 1px solid var(--border-default);
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.al-section .panel-header h2 {
+  color: var(--accent-blue);
+  font-weight: 700;
+  letter-spacing: 0.8px;
 }
 
 .al-controls {
@@ -687,6 +696,7 @@ body {
 .al-controls .btn {
   flex: 1;
   justify-content: center;
+  font-weight: 600;
 }
 
 .al-indicator {
@@ -700,11 +710,12 @@ body {
   height: 8px;
   border-radius: 50%;
   background: var(--text-tertiary);
+  transition: all 0.3s ease;
 }
 
 .al-indicator.loaded .dot {
   background: var(--success);
-  box-shadow: 0 0 6px var(--success);
+  box-shadow: 0 0 8px var(--success);
 }
 .al-indicator.training .dot {
   background: var(--accent-amber);
@@ -715,21 +726,26 @@ body {
   0%,
   100% {
     opacity: 1;
+    box-shadow: 0 0 2px var(--accent-amber);
   }
   50% {
     opacity: 0.4;
+    box-shadow: 0 0 10px var(--accent-amber);
   }
 }
 
 .al-stats {
   padding: var(--sp-2) var(--sp-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
 }
 
 .stat-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 3px 0;
+  padding: 2px 0;
   font-size: 11px;
 }
 
@@ -739,27 +755,35 @@ body {
 .stat-value {
   font-family: var(--font-mono);
   font-weight: 500;
+  color: var(--text-primary);
+}
+
+.al-progress-container {
+  margin-top: var(--sp-2);
+  margin-bottom: var(--sp-1);
+  padding-top: var(--sp-2);
+  border-top: 1px dashed var(--border-subtle);
 }
 
 .progress-bar {
   height: 4px;
-  background: var(--bg-tertiary);
+  background: var(--bg-elevated);
   border-radius: 2px;
-  margin-top: var(--sp-2);
+  margin-top: var(--sp-1);
   overflow: hidden;
 }
 
 .progress-bar.large {
-  height: 8px;
-  border-radius: 4px;
-  margin-top: var(--sp-3);
+  height: 6px;
+  border-radius: 3px;
+  margin-top: var(--sp-2);
 }
 
 .progress-fill {
   height: 100%;
   background: var(--accent-gradient);
   border-radius: inherit;
-  transition: width 0.5s ease;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .badge {

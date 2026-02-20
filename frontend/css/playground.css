@@ -1,0 +1,293 @@
+/**
+ * Playground UI Styles - AI Engineer Pro Layout
+ */
+
+.playground-view {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  height: 100%;
+  background: var(--bg-default);
+  overflow: hidden;
+}
+
+/* --- Left Column: Control Panel --- */
+.pg-sidebar {
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border-default);
+  padding: var(--sp-6) var(--sp-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+  overflow-y: auto;
+}
+
+.pg-sidebar-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--sp-2);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pg-select {
+  width: 100%;
+}
+
+.range-container {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.range-container input {
+  flex: 1;
+}
+
+.range-value {
+  min-width: 40px;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--accent-cyan);
+  background: rgba(6, 182, 212, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.pg-sidebar-actions {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding-top: var(--sp-6);
+  border-top: 1px solid var(--border-default);
+}
+
+/* Toggle Switch */
+.pg-toggle-group {
+  margin-top: var(--sp-2);
+}
+
+.pg-toggle-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.pg-toggle-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.pg-toggle-text small {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  font-weight: 400;
+  margin-top: 2px;
+}
+
+.pg-switch {
+  position: relative;
+  width: 36px;
+  height: 20px;
+}
+
+.pg-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.pg-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--bg-hover);
+  border: 1px solid var(--border-default);
+  transition: .2s;
+  border-radius: 20px;
+}
+
+.pg-slider:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 2px;
+  bottom: 2px;
+  background-color: var(--text-secondary);
+  transition: .2s;
+  border-radius: 50%;
+}
+
+.pg-switch input:checked + .pg-slider {
+  background-color: rgba(6, 182, 212, 0.2);
+  border-color: var(--accent-cyan);
+}
+
+.pg-switch input:checked + .pg-slider:before {
+  transform: translateX(16px);
+  background-color: var(--accent-cyan);
+  box-shadow: 0 0 8px var(--accent-cyan);
+}
+
+/* --- Right Column: Workspace --- */
+.pg-workspace {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #000;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.pg-status-bar {
+  display: flex;
+  gap: var(--sp-6);
+  padding: var(--sp-3) var(--sp-6);
+  background: rgba(15, 23, 42, 0.95);
+  border-bottom: 1px solid var(--border-default);
+  flex-shrink: 0;
+}
+
+.pg-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pg-metric-label {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pg-metric-value {
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  color: var(--accent-cyan);
+  font-weight: 500;
+}
+
+.pg-media-area {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: var(--sp-6);
+  min-height: 0;
+  min-width: 0;
+}
+
+/* Upload State */
+.pg-upload-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: 2px dashed var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: 4rem 2rem;
+  background: rgba(30, 41, 59, 0.5);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  max-width: 600px;
+}
+
+.pg-upload-state:hover,
+.pg-upload-state.dragover {
+  border-color: var(--accent-cyan);
+  background: rgba(6, 182, 212, 0.05);
+}
+
+.pg-upload-icon {
+  color: var(--text-tertiary);
+  margin-bottom: var(--sp-4);
+  transition: color 0.2s ease;
+}
+
+.pg-upload-state:hover .pg-upload-icon,
+.pg-upload-state.dragover .pg-upload-icon {
+  color: var(--accent-cyan);
+}
+
+.pg-upload-state h4 {
+  color: var(--text-primary);
+  margin-bottom: var(--sp-2);
+}
+
+.pg-upload-state p {
+  font-size: 0.85rem;
+}
+
+/* Result State */
+.pg-result-state {
+  position: absolute;
+  top: var(--sp-6);
+  bottom: var(--sp-6);
+  left: var(--sp-6);
+  right: var(--sp-6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pg-media-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pg-media-container img,
+.pg-media-container video {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+/* Loading Overlay inside Result State */
+.pg-loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  color: var(--text-primary);
+  backdrop-filter: blur(4px);
+  border-radius: var(--radius-md);
+}
+
+.pg-loading-overlay .spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--accent-cyan);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: var(--sp-4);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
