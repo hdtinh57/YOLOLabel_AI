@@ -215,3 +215,17 @@ class ALCycleSummary(BaseModel):
     images_rejected: int = 0
     run_id: str | None = None
 
+
+class InferenceSession(BaseModel):
+    """Playground inference session record."""
+
+    id: int
+    project_id: str
+    model_version_id: int
+    file_type: str
+    input_file: str
+    output_file: str
+    total_detections: int
+    created_at: float
+    duration_ms: float
+

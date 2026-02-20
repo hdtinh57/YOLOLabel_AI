@@ -199,6 +199,19 @@ CREATE TABLE IF NOT EXISTS predictions (
     UNIQUE(project, image_name, cycle_id)
 );
 
+-- Inference Sessions (Playground)
+CREATE TABLE IF NOT EXISTS inference_sessions (
+    id               INTEGER PRIMARY KEY AUTOINCREMENT,
+    project_id       TEXT NOT NULL,
+    model_version_id INTEGER NOT NULL REFERENCES model_versions(id),
+    file_type        TEXT NOT NULL,
+    input_file       TEXT NOT NULL,
+    output_file      TEXT,
+    total_detections INTEGER DEFAULT 0,
+    created_at       REAL NOT NULL,
+    duration_ms      REAL DEFAULT 0
+);
+
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_runs_project  ON training_runs(project);
 CREATE INDEX IF NOT EXISTS idx_runs_status   ON training_runs(status);
@@ -206,4 +219,5 @@ CREATE INDEX IF NOT EXISTS idx_epochs_run    ON epoch_metrics(run_id);
 CREATE INDEX IF NOT EXISTS idx_mv_project    ON model_versions(project);
 CREATE INDEX IF NOT EXISTS idx_pred_project  ON predictions(project, status);
 CREATE INDEX IF NOT EXISTS idx_cycles_project ON al_cycles(project);
+CREATE INDEX IF NOT EXISTS idx_inf_sess_project ON inference_sessions(project_id);
 """

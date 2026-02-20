@@ -6,8 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from backend.config import settings
-from backend.routers import images, labels, model, predict, projects, settings as settings_router
-from backend.routers import mlops
+from backend.routers import images, labels, model, predict, projects, settings as settings_router, mlops, playground
 from backend.services.project_service import ProjectService
 
 # Create FastAPI app
@@ -34,6 +33,7 @@ app.include_router(labels.router)
 app.include_router(model.router)
 app.include_router(predict.router)
 app.include_router(mlops.router)
+app.include_router(playground.router)
 
 
 @app.on_event("startup")
@@ -56,6 +56,11 @@ async def startup():
     model_info = ModelService.auto_load_production_model()
     print(f"[MLOps] Model loaded: {model_info['model_name']} (source: {model_info['source']})")
 
+
+# Mount additional static directories
+playground_results_dir = settings.data_dir / "playground_results"
+playground_results_dir.mkdir(parents=True, exist_ok=True)
+app.mount("/playground-results", StaticFiles(directory=str(playground_results_dir)), name="playground_results")
 
 # Serve frontend static files
 frontend_dir = Path(__file__).parent.parent / "frontend"
