@@ -101,35 +101,59 @@ class App {
     }
 
     _bindUI() {
-        // Split selector (skip MLOps button which has no data-split)
-        document.querySelectorAll('.split-btn[data-split]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                // If dashboard is open, close it first
-                if (document.getElementById('dashboard-view').classList.contains('active')) {
-                    Dashboard.hide();
-                }
-                document.querySelectorAll('.split-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                this.currentSplit = btn.dataset.split;
-                this.gallery.load(this.currentSplit);
-            });
-        });
-
-        // MLOps Dashboard toggle
+        // Dashboard and Playground toggles
         const mlopsBtn = document.getElementById('btn-mlops-tab');
+        const playgroundBtn = document.getElementById('btn-playground-tab');
+
+        const hideAllViews = () => {
+            const dashView = document.getElementById('dashboard-view');
+            const pgView = document.getElementById('playground-view');
+            const canvasArea = document.getElementById('canvas-area');
+            const rightPanel = document.getElementById('right-panel');
+            const galleryPanel = document.getElementById('gallery-panel');
+            
+            if (dashView) dashView.classList.remove('active');
+            if (pgView) Playground.hide();
+
+            // Hide primary labeling views if switching to full screen modules
+            if (canvasArea) canvasArea.style.display = 'none';
+            if (rightPanel) rightPanel.style.display = 'none';
+            if (galleryPanel) galleryPanel.style.display = 'none';
+            
+            document.querySelectorAll('.split-btn').forEach(b => b.classList.remove('active'));
+        };
+
+        const showLabelingViews = () => {
+             const dashView = document.getElementById('dashboard-view');
+             if (dashView) dashView.classList.remove('active');
+             Playground.hide();
+             
+             // Restore the main application container
+             const appMain = document.querySelector('.app-main');
+             if (appMain) appMain.style.display = 'flex';
+             
+             document.getElementById('canvas-area').style.display = 'flex';
+             document.getElementById('right-panel').style.display = 'flex';
+             document.getElementById('gallery-panel').style.display = 'flex';
+             
+             // Trigger resize on the canvas to prevent UI visual glitch
+             if (this.canvas && typeof this.canvas._resizeCanvas === 'function') {
+                 setTimeout(() => this.canvas._resizeCanvas(), 50);
+             }
+        };
+
         if (mlopsBtn) {
             mlopsBtn.addEventListener('click', () => {
                 const dashView = document.getElementById('dashboard-view');
                 const isActive = dashView.classList.contains('active');
 
-                document.querySelectorAll('.split-btn').forEach(b => b.classList.remove('active'));
-
                 if (isActive) {
+                    showLabelingViews();
                     Dashboard.hide();
-                    // Re-activate the current split button
                     const splitBtn = document.querySelector(`.split-btn[data-split="${this.currentSplit}"]`);
                     if (splitBtn) splitBtn.classList.add('active');
                 } else {
+                    hideAllViews();
                     mlopsBtn.classList.add('active');
                     Dashboard.show();
                 }
@@ -137,6 +161,33 @@ class App {
 
             Dashboard.init();
         }
+
+        if (playgroundBtn) {
+            playgroundBtn.addEventListener('click', () => {
+                const pgView = document.getElementById('playground-view');
+                const isActive = pgView.style.display === 'flex';
+
+                if (isActive) {
+                    showLabelingViews();
+                    const splitBtn = document.querySelector(`.split-btn[data-split="${this.currentSplit}"]`);
+                    if (splitBtn) splitBtn.classList.add('active');
+                } else {
+                    hideAllViews();
+                    playgroundBtn.classList.add('active');
+                    Playground.show();
+                }
+            });
+        }
+
+        document.querySelectorAll('.split-btn[data-split]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                showLabelingViews();
+                document.querySelectorAll('.split-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                this.currentSplit = btn.dataset.split;
+                this.gallery.load(this.currentSplit);
+            });
+        });
 
         // Tool buttons
         document.querySelectorAll('[data-tool]').forEach(btn => {
@@ -414,8 +465,13 @@ class App {
     // --- Active Learning ---
     async _autoPredict() {
         try {
-            const modelPath = document.getElementById('al-model-select')?.value || null;
-            this.toast('info', 'Running auto-prediction...');
+            if (!this.bestModel) {
+                this.toast('warning', 'No model available for auto-prediction.');
+                return;
+            }
+            const modelPath = this.bestModel.path || this.bestModel.id; // handle varying API specs 
+            this.toast('info', `Running auto-prediction with ${this.bestModel.name || this.bestModel.version}...`);
+            
             const result = await API.predictUnlabeled(this.currentSplit, null, modelPath);
             this.toast('success', `Predicted ${result.count} images`);
             await this.gallery.load(this.currentSplit);
@@ -438,21 +494,46 @@ class App {
     async _loadALModels() {
         try {
             const models = await API.getAvailableModels();
-            const select = document.getElementById('al-model-select');
-            if (!select) return;
+            if (!models || models.length === 0) {
+                document.getElementById('stat-model').textContent = 'No models found';
+                const btnAutoPredict = document.getElementById('btn-auto-predict');
+                if (btnAutoPredict) btnAutoPredict.disabled = true;
+                return;
+            }
 
-            const options = models.map(m => {
-                 let label = m.name;
-                 // Simplify display for custom models
-                 if (m.type === 'custom') {
-                     label = m.name; 
-                 }
-                 return `<option value="${m.path}">${label}</option>`;
-            }).join('');
+            // Find best model: 1. production stage -> 2. highest mAP
+            let bestModel = models.find(m => (m.stage || '').toLowerCase() === 'production');
             
-            select.innerHTML = `<option value="">Current Model</option>` + options;
+            if (!bestModel) {
+                bestModel = models.reduce((best, current) => {
+                    const currentMap = current.metrics?.['mAP50-95'] || current.metrics?.['mAP_50_95'] || current.metrics?.mAP50 || 0;
+                    const bestMap = best.metrics?.['mAP50-95'] || best.metrics?.['mAP_50_95'] || best.metrics?.mAP50 || 0;
+                    return currentMap > bestMap ? current : best;
+                }, models[0]);
+            }
+
+            this.bestModel = bestModel;
+
+            const modelLabel = document.getElementById('stat-model');
+            if (modelLabel) {
+                const name = bestModel.name || bestModel.version || 'Loaded';
+                const stage = bestModel.stage ? `[${bestModel.stage.toUpperCase()}] ` : '';
+                modelLabel.textContent = `${stage}${name}`;
+                modelLabel.title = `Path: ${bestModel.path}`;
+            }
+
+            const btnAutoPredict = document.getElementById('btn-auto-predict');
+            if (btnAutoPredict) {
+                btnAutoPredict.disabled = false;
+            }
+            
+            const indicator = document.getElementById('al-indicator');
+            if (indicator) {
+                indicator.className = 'al-indicator loaded';
+            }
         } catch (e) {
             console.error('Failed to load AL models:', e);
+            document.getElementById('stat-model').textContent = 'Error loading';
         }
     }
 
@@ -502,17 +583,29 @@ class App {
             
             const container = document.getElementById('gallery-stats');
             if (container) {
-                container.querySelector('.stat-badge.labeled').textContent = stats.labeled;
-                container.querySelector('.stat-badge.unlabeled').textContent = stats.unlabeled;
-                container.querySelector('.stat-badge.predicted').textContent = stats.predicted;
+                container.querySelector('.stat-badge.labeled').textContent = stats.labeled || 0;
+                container.querySelector('.stat-badge.unlabeled').textContent = stats.unlabeled || 0;
+                container.querySelector('.stat-badge.predicted').textContent = stats.predicted || 0;
             }
             
-            // Also update Active Learning indicator
-            const indicator = document.getElementById('al-indicator');
-            if (indicator) {
-                 // Logic for indicator status?
-                 // For now, just remove 'training' class if not training?
-                 // But polling handles training status.
+            // Update Active Learning Progress Container
+            const trainThreshold = parseInt(document.getElementById('setting-threshold')?.value || '10');
+            const progressFill = document.querySelector('#label-progress .progress-fill');
+            const progressText = document.getElementById('stat-progress-text');
+            
+            if (progressFill && progressText) {
+                const labeledCount = stats.labeled || 0;
+                let percentage = (labeledCount / trainThreshold) * 100;
+                if (percentage > 100) percentage = 100;
+                
+                progressFill.style.width = `${percentage}%`;
+                progressText.textContent = `${labeledCount} / ${trainThreshold}`;
+                
+                if (percentage >= 100) {
+                    progressFill.style.background = 'var(--success)';
+                } else {
+                    progressFill.style.background = 'var(--accent-gradient)';
+                }
             }
         } catch (e) {
             console.warn('Failed to load AL stats:', e);

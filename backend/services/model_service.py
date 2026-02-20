@@ -287,6 +287,7 @@ class ModelService:
                     "exist_ok": True,
                     "save": True,
                     "verbose": True,
+                    "workers": 0, # Prevent OOM error in OpenCV/DataLoader
                 }
                 train_args.update(kwargs)
 
